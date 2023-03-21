@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 from pathlib import Path
 import sys
 import torch
-
+import argparse
 
 
 # file_type = "audio"  # @param ["audio","video"]
@@ -30,12 +30,12 @@ def extract_audio(filepath):
 	dirname = os.path.dirname(filepath)
 	file_name = os.path.basename(filepath)
 	file_basename = file_name.split('.')[0]
-	os.system(f'ffmpeg -i {file_name} -f mp3 -ab 192000 -vn {file_basename}.mp3')
+	os.system(f'ffmpeg -i {filepath} -f mp3 -ab 192000 -vn {file_basename}.mp3')
 	toc = time.time()
 	print(f'Time for extract_audio: {toc-tic}s')
 	pass
 
-def extract_subtitle(filepath, model_size, language):
+def extract_subtitle(filepath, model_size, language,srt_path):
 	tic = time.time()
 	print('Loading model...')
 	model = whisper.load_model(model_size)
@@ -51,45 +51,19 @@ def extract_subtitle(filepath, model_size, language):
 	print(f'Time for extract_subtitle: {toc-tic}s')
 	file_basename = file_name.split('.')[0]
 	from whisper.utils import WriteSRT
-	with open(Path(dirname) / (file_basename + ".srt"), "w", encoding="utf-8") as srt:
+	with open(srt_path, "w", encoding="utf-8") as srt:
 		writer = WriteSRT(dirname)
 		writer.write_result(result, srt)
 
-# extract_audio("./mx.mp4")
-extract_subtitle("./mx.mp3",'large-v2', 'Japanese')
-# print('加载模型 Loading model...')
-# model = whisper.load_model(model_size)
+parser = argparse.ArgumentParser(description='Extract the audio and auto generate SRT file of a given video.')
+parser.add_argument('--input', '-i', type=str, help='input video file path, for example ./xxx.mp4')
+parser.add_argument('--language', '-l', type=str, help='main language of the video, for example english')
+parser.add_argument('--output', '-o', type=str, help='output SRT file path, for example ./xxx.srt')
 
-# #Transcribe
-# tic = time.time()
-# print('识别中 Transcribe in progress...')
-# result = model.transcribe(audio = f'{file_name}', language= language, verbose=False)
-
-# #Anonymous usage data for stats
-# #Comment out this block if you do not want send your data
-# try: 
-#   requests.get(f'https://api.callmebot.com/whatsapp.php?phone=61402628080&text={file_name}+N46Whisper&apikey=8080872')
-# except Exception as e:
-#   pass
-
-# #Time comsumed
-# toc = time.time()
-# print('识别完毕 Done')
-# print(f'Time consumpution {toc-tic}s')
-
-# #Write SRT file
-# from whisper.utils import WriteSRT
-# with open(Path(output_dir) / (file_basename + ".srt"), "w", encoding="utf-8") as srt:
-#     writer = WriteSRT(output_dir)
-#     writer.write_result(result, srt)
-# #Convert SRT to ASS
-
-# from srt2ass import srt2ass
-# assSub = srt2ass(file_basename + ".srt", sub_style, is_split,split_method)
-# print('ASS subtitle saved as: ' + assSub)
-# files.download(assSub)
-# # os.remove(file_basename + ".srt")
-# torch.cuda.empty_cache()
-# print('字幕生成完毕 All done!')
-
-# torch.cuda.empty_cache()
+args = parser.parse_args()
+# print('Input file:', args.input)
+# print('language:', args.language)
+extract_audio(args.input)
+file_name = os.path.basename(args.input)
+file_basename = file_name.split('.')[0]+".mp3"
+extract_subtitle(file_name.split('.')[0]+".mp3",'large-v2', args.language,args.output)
