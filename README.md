@@ -49,6 +49,10 @@ scoop install  ffmpeg
 `pip install git+https://github.com/openai/whisper.git`
 
   
+## Performance
+- Please be noted that it's a computationally heavy task so it will be quite slow if your hardware specs is low. 
+- The transcription performance is also not good on mac, most likely due to the ARM architecture is not very well supported by Whisper
+- It works quite well on my desktop setup, CPU: xeon e5 2697 v3, RAM: 32GB, GPU: RTX3070 OS: ubuntu
 
 ## How to generate subtitle for a video
 

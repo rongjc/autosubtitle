@@ -127,14 +127,15 @@ Text to translate:
     print(t_text)
     return t_text
 
-def run(input, input_language, output, output_language, api_key, chunk_size):
+def translate_gpt(input, input_language, output, output_language, api_key, chunk_size):
     
     openai.api_key = api_key
     file = input
     file_out = output
-    
+    print(file)
     with open(file, "r") as f:
         text = f.read()
+
     subtitles = parse_srt_data(text)
     ntokens = []
     chunks = []
@@ -162,16 +163,14 @@ def run(input, input_language, output, output_language, api_key, chunk_size):
             subtitle['text'] = data[str(subtitle['number']) ]
     
     write_srt_file(output, subtitles)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Translate an SRT from a language to another using chatgpt.')
+    parser.add_argument('--input', '-i', type=str, help='input SRT file,e.g. ./xxx.srt')
+    parser.add_argument('--input_language', '-il', type=str, help='input SRT file language, e.g English')
+    parser.add_argument('--output', '-o', type=str, help='output SRT file, e.g. ./xxx_translated.srt')
+    parser.add_argument('--output_language', '-ol', type=str, help='output SRT file language, e.g. Japanese')
+    parser.add_argument('--token', '-t', type=str, help='chatGPT api token')
+    parser.add_argument('--chunk_size', '-n', type=str, default=1000, help='Chunk size of the API call')
 
-parser = argparse.ArgumentParser(description='Translate an SRT from a language to another using chatgpt.')
-parser.add_argument('--input', '-i', type=str, help='input SRT file,e.g. ./xxx.srt')
-parser.add_argument('--input_language', '-il', type=str, help='input SRT file language, e.g English')
-parser.add_argument('--output', '-o', type=str, help='output SRT file, e.g. ./xxx_translated.srt')
-parser.add_argument('--output_language', '-ol', type=str, help='output SRT file language, e.g. Japanese')
-parser.add_argument('--token', '-t', type=str, help='chatGPT api token')
-parser.add_argument('--chunk_size', '-n', type=str, default=1000, help='Chunk size of the API call')
-
-# run('./BLK-444.srt', './BLK-444_C.srt', "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")
-
-args = parser.parse_args()
-run(args.input,args.input_language,args.output,args.output_language, args.token, args.chunk_size)
+    args = parser.parse_args()
+    translate_gpt(args.input,args.input_language,args.output,args.output_language, args.token, args.chunk_size)
